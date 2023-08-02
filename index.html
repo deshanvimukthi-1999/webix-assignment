@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Preferences</title>
+  <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
+  <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>  
+  <style>
+    :root {
+      --theme-color: blue; 
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2; 
+    }
+
+    #userPreferences {
+      max-width: 700px;
+      margin: 0 auto;
+      background-color: #fff; 
+      padding: 0;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      background-color: var(--theme-color);
+    }
+  </style>
+</head>
+<body>
+  <div id="userPreferences"></div>
+  <script>
+    webix.ready(function () {
+      // Data for different preference categories
+      const accountSettingsData = [
+        { id: 1, label: "Username", value: "john_doe" },
+        { id: 2, label: "Email", value: "john@example.com" },
+        { id: 3, label: "Password", value: "********" },
+      ];
+
+      const notificationSettingsData = [
+        { id: 4, label: "Email Notifications", value: true },
+        { id: 5, label: "Push Notifications", value: false },
+        { id: 6, label: "Notifications", value: "daily" },
+      ];
+
+      const themeSettingsData = [
+        { id: 7, label: "Theme Color", value: "blue" },
+        { id: 8, label: "Font Size", value: "medium" },
+        { id: 9, label: "Layout", value: "grid" },
+      ];
+
+      const privacySettingsData = [
+        { id: 10, label: "Profile Visibility", value: "public" },
+      ];
+
+      // Functions to create form elements for different preference categories
+      function createAccountForm() {
+        return {
+          view: "form",
+          id: "accountForm",
+          elements: accountSettingsData.map((item) => ({
+            view: "text",
+            label: item.label,
+            name: item.label,
+            value: item.value,
+          })),
+        };
+      }
+
+      function createNotificationForm() {
+        return {
+          view: "form",
+          id: "notificationForm",
+          elements: notificationSettingsData.map((item) => ({
+            view: item.label.includes("Notifications") ? "checkbox" : "text",
+            label: item.label,
+            name: item.label,
+            value: item.value,
+          })),
+        };
+      }
+
+      function createThemeForm() {
+        return {
+          view: "form",
+          id: "themeForm",
+          elements: themeSettingsData.map((item) => ({
+            view: item.label === "Theme Color" ? "select" : "text",
+            label: item.label,
+            name: item.label,
+            value: item.value,
+            options: item.label === "Theme Color" ? ["blue", "green", "red"] : [],
+          })),
+        };
+      }
+
+      function createPrivacyForm() {
+        return {
+          view: "form",
+          id: "privacyForm",
+          elements: privacySettingsData.map((item) => ({
+            view: item.label === "Profile Visibility" ? "radio" : "checkbox",
+            label: item.label,
+            name: item.label,
+            value: item.value,
+            options: item.label === "Profile Visibility" ? ["public", "private"] : [],
+          })),
+        };
+      }
+
+      const saveButton = {
+        view: "button",
+        value: "Save",
+        click: function () {
+          if (
+            validateForm("accountForm") &&
+            validateForm("notificationForm") &&
+            validateForm("themeForm") &&
+            validateForm("privacyForm")
+          ) {
+            const preferencesData = {
+              account: $$("accountForm").getValues(),
+              notifications: $$("notificationForm").getValues(),
+              theme: $$("themeForm").getValues(),
+              privacy: $$("privacyForm").getValues(),
+            };
+            // Simulate backend API call using setTimeout
+            setTimeout(function () {
+              savePreferencesToBackend(preferencesData);
+            }, 1000);
+          } else {
+            webix.message({
+              type: "error",
+              text: "Please fill in all required fields.",
+            });
+          }
+        },
+      };
+
+      webix.ui({
+        container: "userPreferences",
+        rows: [
+          {
+            view: "fieldset",
+            label: "Account Settings",
+            body: createAccountForm(),
+          },
+          {
+            view: "fieldset",
+            label: "Notification Settings",
+            body: createNotificationForm(),
+          },
+          {
+            view: "fieldset",
+            label: "Theme Settings",
+            body: createThemeForm(),
+          },
+          {
+            view: "fieldset",
+            label: "Privacy Settings",
+            body: createPrivacyForm(),
+          },
+          saveButton,
+        ],
+      });
+
+      // Function to validate each form
+      function validateForm(formId) {
+        const form = $$(`${formId}`);
+        return form.validate();
+      }
+
+      // Function to save preferences to the backend
+      function savePreferencesToBackend(preferencesData) {
+        console.log(preferencesData);
+        webix.message("Preferences saved successfully!");
+
+        // Clear form fields and update theme color after saving
+        const forms = ["accountForm", "notificationForm", "themeForm", "privacyForm"];
+        forms.forEach((formId) => {
+          const form = $$(`${formId}`);
+          form.clear();
+          form.parse(form.data);
+        });
+
+        // Change theme color based on the selected value
+        const selectedTheme = preferencesData.theme["Theme Color"];
+        if (selectedTheme) {
+          document.documentElement.style.setProperty("--theme-color", selectedTheme);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
